@@ -11,8 +11,8 @@ end
 
 # check if a url is available with a get request
 def isResponseAvailable (url)
-    uri = URI(url)
     begin
+        uri = URI(url)
         res = Net::HTTP.get_response(uri)
         res.is_a?(Net::HTTPSuccess)
     rescue
@@ -20,21 +20,23 @@ def isResponseAvailable (url)
     end
 end
 
-# starts tracking for availability of a url
-# currently checks 5 times
-def beginChecking (url)
-    x = 0
-    up = true
+# notifies the specific hook
+def notify (hook)
+    uri = URI(hook)
+    Net::HTTP.get_response(uri)
+end
 
-    # start our checking loop
-    while x < 5
+# starts tracking for availability of a url
+def beginChecking (url, hook)
+    while true
         up = isResponseAvailable(url)
-        break unless up
-        x = x + 1
+        puts "site: #{url} is currently #{up ? "up" : "down"}"
+        if !up
+            notify(hook)
+            break
+        end
         sleep(5)
     end
-    
-    up
 end
 
 # sets up our routes
@@ -45,18 +47,23 @@ def init()
 
     # simple endpoint that receives a url and request type to check
     post "/check" do
-        # parse our request
         check = parseRequest(request)
 
-        # check loop
-        up = beginChecking(check["url"])
+        # check loop in new thread per request
+        Thread.new {
+            beginChecking(check["url"], check["hook"])
+        }
 
-        # prepare our response
+        # let the client know we have their request
         res = Hash.new
-        res["status"] = up ? "okay" : "down"
-
-        # set response params
+        res["status"] = "Received request to keep check."
         body (JSON.generate(res))
+        status 200
+    end
+
+    # hook to capture a notification when an address goes down
+    get "/notify" do
+        puts "Was notified of being down"
         status 200
     end
 end
