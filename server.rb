@@ -41,6 +41,14 @@ end
 
 # sets up our routes
 def init()
+    # configure sinatra
+    configure do
+        # sinatra traps system interupts
+        # turning this off helps us stop the server
+        # if one of our checking loops is still running
+        disable :traps
+    end
+
     get "/" do
         "app is running"
     end
