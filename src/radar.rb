@@ -14,7 +14,7 @@ class ResponseRadar
     def start
         # return early if thread exists
         if @radar != nil
-            return
+            return false
         end
 
         # spawn our worker
@@ -28,18 +28,20 @@ class ResponseRadar
                 sleep(5)
             }
         }
+        true
     end
 
     # stops the worker thread
     def stop
         # return early if no worker
         if @radar == nil
-            return
+            return false
         end
 
         # end our worker
         @radar.exit
         @radar = nil
+        true
     end
 
     # check if a url is available with a get request

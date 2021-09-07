@@ -25,36 +25,86 @@ class Server < Sinatra::Base
     # simple endpoint that receives a url and request type to check
     post "/create" do
         params = JSON.parse(request.body.read)
-    
-        # create and start our radar
-        radar = ResponseRadar.new(params["url"], params["hook"])
-        radar.start
 
-        # store a reference
-        radarID = SecureRandom.uuid
-        radars[radarID] = radar
-    
-        # return our response
-        body(JSON.generate({
-            "status" => "Okay",
-            "id" => radarID
-        }))
-        status 200
+        if (params.key?("url") && params.key?("hook"))
+            # create and start our radar
+            radar = ResponseRadar.new(params["url"], params["hook"])
+            radar.start
+
+            # store a reference
+            radarID = SecureRandom.uuid
+            radars[radarID] = radar
+        
+            # return our response
+            body(JSON.generate({
+                "status" => "Okay",
+                "id" => radarID
+            }))
+            status 200
+        else
+            # return our response
+            body(JSON.generate({
+                "status" => "Parameters not sent"
+            }))
+            status 200
+        end
     end
 
     # starts a certain radar based on an ID
     post "/start" do
         params = JSON.parse(request.body.read)
-        radarID = params["id"]
-        radars[radarID].start
+        responseStatus = ""
+
+        # did we receive an id?
+        if params.key?("id")
+            radarID = params["id"]
+
+            if radars.key?(radarID)
+                if radars[radarID].start
+                    responseStatus = "Radar started"
+                else
+                    responseStatus = "Radar was already started"
+                end
+            else
+                responseStatus = "ID was not valid"
+            end
+        else
+            responseStatus = "ID not sent"
+        end
+
+        # return our status
+        body(JSON.generate({
+            "status" => responseStatus
+        }))
         status 200
     end
 
     # stops a certain radar based on an ID
     post "/stop" do
         params = JSON.parse(request.body.read)
-        radarID = params["id"]
-        radars[radarID].stop
+        responseStatus = ""
+
+        # did we receive an id?
+        if params.key?("id")
+            radarID = params["id"]
+
+            if radars.key?(radarID)
+                if radars[radarID].stop
+                    responseStatus = "Radar stopped"
+                else
+                    responseStatus = "Radar was alrady stopped"
+                end
+            else
+                responseStatus = "ID was not valid"
+            end
+        else
+            responseStatus = "ID not sent"
+        end
+
+        # return our status
+        body(JSON.generate({
+            "status" => responseStatus
+        }))
         status 200
     end
 
