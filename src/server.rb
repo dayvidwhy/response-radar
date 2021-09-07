@@ -22,12 +22,8 @@ class Server < Sinatra::Base
         disable :traps
     end
 
-    get "/" do
-        "app is running"
-    end
-
     # simple endpoint that receives a url and request type to check
-    post "/check" do
+    post "/create" do
         params = JSON.parse(request.body.read)
     
         # create and start our radar
@@ -38,30 +34,34 @@ class Server < Sinatra::Base
         radarID = SecureRandom.uuid
         radars[radarID] = radar
     
-        # let the client know we have their request
-        res = {
-            "status" => "Received request to keep check.",
-            "id" => radarID
-        }
-
         # return our response
-        body(JSON.generate(res))
+        body(JSON.generate({
+            "status" => "Okay",
+            "id" => radarID
+        }))
         status 200
     end
-    
-    # hook to capture a notification when an address goes down
-    get "/notify" do
-        puts "Was notified of being down"
+
+    # starts a certain radar based on an ID
+    post "/start" do
+        params = JSON.parse(request.body.read)
+        radarID = params["id"]
+        radars[radarID].start
         status 200
     end
 
     # stops a certain radar based on an ID
     post "/stop" do
         params = JSON.parse(request.body.read)
-
         radarID = params["id"]
-
         radars[radarID].stop
+        status 200
+    end
+
+    # endpoint for testing
+    get "/notify" do
+        puts "Was notified of being down"
+        status 200
     end
 
     begin

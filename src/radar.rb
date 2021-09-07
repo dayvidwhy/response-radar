@@ -10,8 +10,14 @@ class ResponseRadar
         @radar
     end
 
-    # starts tracking for availability of a url
+    # starts our worker thread
     def start
+        # return early if thread exists
+        if @radar != nil
+            return
+        end
+
+        # spawn our worker
         @radar = Thread.new {
             loop {
                 up = isResponseAvailable
@@ -24,8 +30,16 @@ class ResponseRadar
         }
     end
 
+    # stops the worker thread
     def stop
+        # return early if no worker
+        if @radar == nil
+            return
+        end
+
+        # end our worker
         @radar.exit
+        @radar = nil
     end
 
     # check if a url is available with a get request
