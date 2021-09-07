@@ -7,22 +7,29 @@ class ResponseRadar
     def initialize(url, hook)
         @url = url
         @hook = hook
+        @radar
     end
 
     # starts tracking for availability of a url
-    def beginChecking ()
-        while true
-            up = isResponseAvailable
-            puts "site: #{@url} is currently #{up ? "up" : "down"}"
-            if !up
-                notify
-            end
-            sleep(5)
-        end
+    def start
+        @radar = Thread.new {
+            loop {
+                up = isResponseAvailable
+                puts "site: #{@url} is currently #{up ? "up" : "down"}"
+                if !up
+                    notify
+                end
+                sleep(5)
+            }
+        }
+    end
+
+    def stop
+        @radar.exit
     end
 
     # check if a url is available with a get request
-    def isResponseAvailable ()
+    def isResponseAvailable
         begin
             uri = URI(@url)
             res = Net::HTTP.get_response(uri)
@@ -33,7 +40,7 @@ class ResponseRadar
     end
 
     # notifies the specific hook
-    def notify ()
+    def notify
         uri = URI(@hook)
         Net::HTTP.get_response(uri)
     end

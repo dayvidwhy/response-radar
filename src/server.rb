@@ -30,12 +30,13 @@ class Server < Sinatra::Base
     post "/check" do
         params = JSON.parse(request.body.read)
     
-        # check loop in new thread per request
+        # create and start our radar
+        radar = ResponseRadar.new(params["url"], params["hook"])
+        radar.start
+
+        # store a reference
         radarID = SecureRandom.uuid
-        radars[radarID] = Thread.new {
-            responseRadar = ResponseRadar.new(params["url"], params["hook"])
-            responseRadar.beginChecking
-        }
+        radars[radarID] = radar
     
         # let the client know we have their request
         res = {
@@ -60,7 +61,7 @@ class Server < Sinatra::Base
 
         radarID = params["id"]
 
-        radars[radarID].exit
+        radars[radarID].stop
     end
 
     begin
@@ -68,7 +69,7 @@ class Server < Sinatra::Base
     rescue Interrupt => e
         quit!
         radars.each do |radarID, radar|
-            radar.exit
+            radar.stop
         end
         STDERR.puts "Process interrupted, shutting down."
     rescue
