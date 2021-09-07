@@ -1,6 +1,7 @@
 # library imports
 require "sinatra/base"
 require 'json'
+require 'securerandom'
 
 # load our radar
 require_relative './radar.rb'
@@ -8,7 +9,7 @@ require_relative './radar.rb'
 # Helper to setup our routes on the server and then
 # provides a method to actually start the server.
 class Server < Sinatra::Base
-    set :radars, Array.new
+    set :radars, Hash.new
 
     helpers do
         def radars; self.class.radars; end
@@ -30,15 +31,18 @@ class Server < Sinatra::Base
         check = JSON.parse(request.body.read)
     
         # check loop in new thread per request
-        radars << Thread.new {
+        radarID = SecureRandom.uuid
+        radars[radarID] = Thread.new {
             responseRadar = ResponseRadar.new(check["url"], check["hook"])
             responseRadar.beginChecking
         }
     
         # let the client know we have their request
-        res = Hash.new
-        res["status"] = "Received request to keep check."
-        body (JSON.generate(res))
+        res = {
+            "status" => "Received request to keep check.",
+            "id" => radarID
+        }
+        body(JSON.generate(res))
         status 200
     end
     
@@ -52,7 +56,7 @@ class Server < Sinatra::Base
         run!
     rescue Interrupt => e
         quit!
-        radars.each do |radar|
+        radars.each do |radarID, radar|
             radar.exit
         end
         STDERR.puts "Process interrupted, shutting down."
