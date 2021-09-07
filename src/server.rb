@@ -28,12 +28,12 @@ class Server < Sinatra::Base
 
     # simple endpoint that receives a url and request type to check
     post "/check" do
-        check = JSON.parse(request.body.read)
+        params = JSON.parse(request.body.read)
     
         # check loop in new thread per request
         radarID = SecureRandom.uuid
         radars[radarID] = Thread.new {
-            responseRadar = ResponseRadar.new(check["url"], check["hook"])
+            responseRadar = ResponseRadar.new(params["url"], params["hook"])
             responseRadar.beginChecking
         }
     
@@ -42,6 +42,8 @@ class Server < Sinatra::Base
             "status" => "Received request to keep check.",
             "id" => radarID
         }
+
+        # return our response
         body(JSON.generate(res))
         status 200
     end
@@ -50,6 +52,15 @@ class Server < Sinatra::Base
     get "/notify" do
         puts "Was notified of being down"
         status 200
+    end
+
+    # stops a certain radar based on an ID
+    post "/stop" do
+        params = JSON.parse(request.body.read)
+
+        radarID = params["id"]
+
+        radars[radarID].exit
     end
 
     begin
