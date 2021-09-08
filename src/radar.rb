@@ -9,7 +9,7 @@ class ResponseRadar
     def initialize(url, hook)
         @url = url
         @hook = hook
-        @radar
+        @radar = nil
     end
 
     # starts our worker thread
@@ -20,11 +20,11 @@ class ResponseRadar
         # spawn our worker
         @radar = Thread.new do
             loop do
-                if !responseAvailable
+                if response_available
+                    puts "Radar: #{@url} is up."
+                else
                     notify
                     puts "Radar: #{@url} is down."
-                else
-                    puts "Radar: #{@url} is up."
                 end
                 sleep(5)
             end
@@ -44,7 +44,7 @@ class ResponseRadar
     end
 
     # check if a url is available with a get request
-    def responseAvailable
+    def response_available
         uri = URI(@url)
         res = Net::HTTP.get_response(uri)
         res.is_a?(Net::HTTPSuccess)

@@ -1,6 +1,13 @@
+AllCops:
+  NewCops: enable
+
 Layout/IndentationWidth:
   Width: 4
 Layout/ArgumentAlignment:
   EnforcedStyle: with_fixed_indentation
 Style/ConditionalAssignment:
   EnforcedStyle: assign_inside_condition
+Metrics/MethodLength:
+  Max: 100
+Metrics/BlockLength:
+  Max: 80

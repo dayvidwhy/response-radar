@@ -43,13 +43,13 @@ class Server < Sinatra::Base
         radar.start
 
         # store a reference
-        radarID = SecureRandom.uuid
-        radars[radarID] = radar
+        radar_id = SecureRandom.uuid
+        radars[radar_id] = radar
 
         # return our response
         body(JSON.generate({
             'status' => 'Okay',
-            'id' => radarID
+            'id' => radar_id
         }))
         status 200
     end
@@ -73,10 +73,10 @@ class Server < Sinatra::Base
             halt 200
         end
 
-        radarID = data['id']
+        radar_id = data['id']
 
         # was the id related to a radar?
-        unless radars.key?(radarID)
+        unless radars.key?(radar_id)
             body(JSON.generate({
                 'status' => 'ID was not valid'
             }))
@@ -87,22 +87,22 @@ class Server < Sinatra::Base
         result = false
         case params['action']
         when 'stop'
-            result = radars[radarID].stop
+            result = radars[radar_id].stop
         when 'start'
-            result = radars[radarID].start
+            result = radars[radar_id].start
         end
 
         # check status of the action
-        responseStatus = ''
+        response_status = ''
         if result
-            responseStatus = 'Radar adjusted'
+            response_status = 'Radar adjusted'
         else
-            responseStatus = 'Radar was already adjusted'
+            response_status = 'Radar was already adjusted'
         end
 
         # return our status
         body(JSON.generate({
-            'status' => responseStatus
+            'status' => response_status
         }))
         status 200
     end
@@ -115,9 +115,9 @@ class Server < Sinatra::Base
 
     begin
         run!
-    rescue Interrupt => e
+    rescue Interrupt
         quit!
-        radars.each do |_radarID, radar|
+        radars.each do |_radar_id, radar|
             radar.stop
         end
         warn 'Process interrupted, shutting down.'
