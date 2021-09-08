@@ -7,6 +7,7 @@ require 'securerandom'
 
 # load our radar
 require_relative './radar'
+require_relative '../utils/validate'
 
 # Helper to setup our routes on the server and then
 # provides a method to actually start the server.
@@ -34,6 +35,14 @@ class Server < Sinatra::Base
             # return our response
             body(JSON.generate({
                 'status' => 'Parameters not sent'
+            }))
+            halt 200
+        end
+
+        if !valid_url(data['url']) || !valid_url(data['hook'])
+            # return our response
+            body(JSON.generate({
+                'status' => 'URLs are not valid'
             }))
             halt 200
         end

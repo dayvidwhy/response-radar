@@ -13,12 +13,18 @@ Then to grab the project and get it up and running.
 git clone git@github.com:dayvidwhy/response-radar.git
 cd response-radar
 bundle install
-bundle exec ruby src/server.rb
+bundle exec ruby app/server.rb
 ```
 
 Starts the server at `http://localhost:4567`.
 
 The ruby web framework Sinatra is included as a way of communicating with the running program.
+
+## Linting
+Rubocop is included as a way of style checking the project.
+```bash
+bundle exec rubocop
+```
 
 ## Routes
 The application can be communicated with using these routes.
