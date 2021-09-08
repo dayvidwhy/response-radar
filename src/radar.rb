@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # library imports
 require 'uri'
 require 'net/http'
@@ -13,13 +15,11 @@ class ResponseRadar
     # starts our worker thread
     def start
         # return early if thread exists
-        if @radar != nil
-            return false
-        end
+        return false unless @radar.nil?
 
         # spawn our worker
-        @radar = Thread.new {
-            loop {
+        @radar = Thread.new do
+            loop do
                 if !responseAvailable
                     notify
                     puts "Radar: #{@url} is down."
@@ -27,17 +27,15 @@ class ResponseRadar
                     puts "Radar: #{@url} is up."
                 end
                 sleep(5)
-            }
-        }
+            end
+        end
         true
     end
 
     # stops the worker thread
     def stop
         # return early if no worker
-        if @radar == nil
-            return false
-        end
+        return false if @radar.nil?
 
         # end our worker
         @radar.exit
@@ -47,13 +45,11 @@ class ResponseRadar
 
     # check if a url is available with a get request
     def responseAvailable
-        begin
-            uri = URI(@url)
-            res = Net::HTTP.get_response(uri)
-            res.is_a?(Net::HTTPSuccess)
-        rescue
-            false
-        end
+        uri = URI(@url)
+        res = Net::HTTP.get_response(uri)
+        res.is_a?(Net::HTTPSuccess)
+    rescue StandardError
+        false
     end
 
     # notifies the specific hook
