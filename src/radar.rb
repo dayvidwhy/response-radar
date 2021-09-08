@@ -20,10 +20,11 @@ class ResponseRadar
         # spawn our worker
         @radar = Thread.new {
             loop {
-                up = isResponseAvailable
-                puts "site: #{@url} is currently #{up ? "up" : "down"}"
-                if !up
+                if !responseAvailable
                     notify
+                    puts "Radar: #{@url} is down."
+                else
+                    puts "Radar: #{@url} is up."
                 end
                 sleep(5)
             }
@@ -45,7 +46,7 @@ class ResponseRadar
     end
 
     # check if a url is available with a get request
-    def isResponseAvailable
+    def responseAvailable
         begin
             uri = URI(@url)
             res = Net::HTTP.get_response(uri)
