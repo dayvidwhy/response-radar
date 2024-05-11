@@ -12,6 +12,7 @@ require_relative '../utils/validate'
 # Helper to setup our routes on the server and then
 # provides a method to actually start the server.
 class Server < Sinatra::Base
+    set :bind, '0.0.0.0'
     set :radars, {}
 
     helpers do
@@ -25,6 +26,10 @@ class Server < Sinatra::Base
         # turning this off helps us stop the server
         # if one of our checking loops is still running
         disable :traps
+    end
+
+    get '/up' do
+        'Server is up'
     end
 
     # simple endpoint that receives a url and request type to check

@@ -1,24 +1,38 @@
 # Response Radar
+
 Checks whether an address is up over time and responds to given URL's with a notification if the address is down.
 
-## Installation
-Currently using ruby 2.7.x for development so I recommend installing it with homebrew.
-```bash
-brew install ruby@2.7
-# follow further prompts to add to your PATH
-```
+## Getting started
 
-Then to grab the project and get it up and running.
+Install the project.
+
 ```bash
 git clone git@github.com:dayvidwhy/response-radar.git
 cd response-radar
+```
+
+## Running the server
+
+Install ruby using homebrew on MacOS or start the provided containers.
+
+With homebrew:
+```bash
+brew install ruby@3.3
 bundle install
+bundle exec ruby app/server.rb
+```
+
+Alternatively startup the docker container.
+
+```bash
+docker-compose up --build
+docker exec -it response-radar-app bash
 bundle exec ruby app/server.rb
 ```
 
 Starts the server at `http://localhost:4567`.
 
-The ruby web framework Sinatra is included as a way of communicating with the running program.
+The ruby web framework Sinatra is used as a way of communicating with the running program.
 
 ## Linting
 Rubocop is included as a way of style checking the project.
@@ -55,4 +69,5 @@ Returns {
 
 
 ## How it works
+
 When the `/create` endpoint is sent a url to continuously check a worker thread is produced that allows for many addresses to be checked concurrently. When we want to stop the worker checking we end the thread.
